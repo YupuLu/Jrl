@@ -575,8 +575,8 @@ class Ur3(Robot):
             "wrist_3_joint",
         ]
         urdf_filepath = get_filepath("urdfs/ur3/ur3_formatted.urdf")
-        # base_link = "base_link"
-        base_link = "base_link_inertia"
+        base_link = "base_link"
+        # base_link = "base_link_inertia" # note: don't use this. Base starts at 'base_link'
         end_effector_link_name = "wrist_3_link"
 
         # Must match the total number of joints (including fixed) in the robot.
@@ -627,13 +627,14 @@ class Ur5(Robot):
             "wrist_3_joint",
         ]
         urdf_filepath = get_filepath("urdfs/ur5/ur5_formatted.urdf")
-        # base_link = "base_link"
-        base_link = "base_link_inertia"
+        base_link = "base_link"
+        # base_link = "base_link_inertia" # note: don't use this. Base starts at 'base_link'
         end_effector_link_name = "wrist_3_link"
 
         # Must match the total number of joints (including fixed) in the robot.
         # Use "None" for no collision geometry
         collision_capsules_by_link = {
+            "base_link": _load_capsule("urdfs/ur5/capsules/base.txt"),
             "base_link_inertia": _load_capsule("urdfs/ur5/capsules/base.txt"),
             "forearm_link": _load_capsule("urdfs/ur5/capsules/forearm.txt"),
             "shoulder_link": _load_capsule("urdfs/ur5/capsules/shoulder.txt"),
@@ -677,8 +678,8 @@ class Ur10(Robot):
             "wrist_3_joint",
         ]
         urdf_filepath = get_filepath("urdfs/ur10/ur10_formatted.urdf")
-        # base_link = "base_link"
-        base_link = "base_link_inertia"
+        base_link = "base_link"
+        # base_link = "base_link_inertia" # note: don't use this. Base starts at 'base_link'
         end_effector_link_name = "wrist_3_link"
 
         # Must match the total number of joints (including fixed) in the robot.
@@ -729,8 +730,8 @@ class Ur3e(Robot):
             "wrist_3_joint",
         ]
         urdf_filepath = get_filepath("urdfs/ur3e/ur3e_formatted.urdf")
-        # base_link = "base_link"
-        base_link = "base_link_inertia"
+        base_link = "base_link"
+        # base_link = "base_link_inertia" # note: don't use this. Base starts at 'base_link'
         end_effector_link_name = "wrist_3_link"
 
         # Must match the total number of joints (including fixed) in the robot.
@@ -781,8 +782,10 @@ class Ur5e(Robot):
             "wrist_3_joint",
         ]
         urdf_filepath = get_filepath("urdfs/ur5e/ur5e_formatted.urdf")
-        # base_link = "base_link"
-        base_link = "base_link_inertia"
+
+        base_link = "base_link"
+        # base_link = "base_link_inertia" # note: don't use this. Base starts at 'base_link'
+
         end_effector_link_name = "wrist_3_link"
 
         # Must match the total number of joints (including fixed) in the robot.
@@ -833,8 +836,8 @@ class Ur10e(Robot):
             "wrist_3_joint",
         ]
         urdf_filepath = get_filepath("urdfs/ur10e/ur10e_formatted.urdf")
-        # base_link = "base_link"
-        base_link = "base_link_inertia"
+        base_link = "base_link"
+        # base_link = "base_link_inertia" # note: don't use this. Base starts at 'base_link'
         end_effector_link_name = "wrist_3_link"
 
         # Must match the total number of joints (including fixed) in the robot.
@@ -885,8 +888,8 @@ class Ur16e(Robot):
             "wrist_3_joint",
         ]
         urdf_filepath = get_filepath("urdfs/ur16e/ur16e_formatted.urdf")
-        # base_link = "base_link"
-        base_link = "base_link_inertia"
+        base_link = "base_link"
+        # base_link = "base_link_inertia" # note: don't use this. Base starts at 'base_link'
         end_effector_link_name = "wrist_3_link"
 
         # Must match the total number of joints (including fixed) in the robot.
