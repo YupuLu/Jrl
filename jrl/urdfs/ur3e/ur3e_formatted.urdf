@@ -60,6 +60,8 @@
           this location. Nor can they rely on the existence of the macro.
   -->
   <!-- links: main serial chain -->
+  <klampt use_vis_geom="1" flip_yz="1" />
+  
   <link name="base_link"/>
   <link name="base_link_inertia">
     <visual>

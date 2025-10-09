@@ -1,4 +1,6 @@
 <robot name="baxter">
+  <klampt use_vis_geom="1" flip_yz="1" />
+  
   <link name="base">
   </link>
   <link name="torso">

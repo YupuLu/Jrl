@@ -152,7 +152,7 @@ class TestBatchIK(unittest.TestCase):
     ):
         # Run ik
         poses_target_pt = torch.tensor(poses_target, device=DEVICE)
-        x_updated_pt = robot.inverse_kinematics_step_jacobian_pinv(poses_target_pt, x_current, alpha)
+        x_updated_pt = robot.inverse_kinematics_step_levenburg_marquardt(poses_target_pt, x_current, alpha)
 
         self.assertTrue(
             _joint_angles_all_in_joint_limits(robot, x_updated_pt),
@@ -166,7 +166,7 @@ class TestBatchIK(unittest.TestCase):
     #
 
     def test_batch_ik_step_functions(self):
-        """Test that ik steps made with inverse_kinematics_step_jacobian_pinv()  makes progress"""
+        """Test that ik steps made with inverse_kinematics_step_levenburg_marquardt()  makes progress"""
 
         alpha = 0.05
 

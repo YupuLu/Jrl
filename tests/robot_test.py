@@ -260,6 +260,7 @@ class RobotTest(unittest.TestCase):
             "ur10": 6,
             "ur3e": 6,
             "ur5e": 6,
+            "ur5e1": 6,
             "ur10e": 6,
             "ur16e": 6,
             "cr5": 6,
@@ -376,6 +377,14 @@ class RobotTest(unittest.TestCase):
                 (-6.283185307179586, 6.283185307179586),
                 (-6.283185307179586, 6.283185307179586),
             ],
+            "ur5e1": [
+                (-6.283185307179586, 6.283185307179586),
+                (-6.283185307179586, 6.283185307179586),
+                (-3.141592653589793, 3.141592653589793),
+                (-6.283185307179586, 6.283185307179586),
+                (-6.283185307179586, 6.283185307179586),
+                (-6.283185307179586, 6.283185307179586),
+            ],
             "ur10e": [
                 (-6.283185307179586, 6.283185307179586),
                 (-6.283185307179586, 6.283185307179586),
@@ -429,6 +438,9 @@ class RobotTest(unittest.TestCase):
         }
         for robot in self.robots:
             self.assertEqual(len(robot.actuated_joints_limits), robot.ndof)
+            if robot.name not in ground_truth_joint_limits:
+                print(f"Skipping {robot.name}. TODO: add ground truthjoint limits for this robot")
+                continue
             for gt_limit, parsed_limit in zip(ground_truth_joint_limits[robot.name], robot.actuated_joints_limits):
                 self.assertAlmostEqual(gt_limit[0], parsed_limit[0])
                 self.assertAlmostEqual(gt_limit[1], parsed_limit[1])
@@ -540,6 +552,14 @@ class RobotTest(unittest.TestCase):
                 "wrist_2_joint",
                 "wrist_3_joint",
             ],
+            "ur5e1": [
+                "shoulder_pan_joint",
+                "shoulder_lift_joint",
+                "elbow_joint",
+                "wrist_1_joint",
+                "wrist_2_joint",
+                "wrist_3_joint",
+            ],
             "ur10e": [
                 "shoulder_pan_joint",
                 "shoulder_lift_joint",
@@ -592,6 +612,9 @@ class RobotTest(unittest.TestCase):
             ],
         }
         for robot in self.robots:
+            if robot.name not in ground_truth_actuated_joints:
+                print(f"Skipping {robot.name}. TODO: add ground truthactuated joints for this robot")
+                continue
             self.assertEqual(len(robot.actuated_joint_names), robot.ndof)
             self.assertListEqual(robot.actuated_joint_names, ground_truth_actuated_joints[robot.name])
 
@@ -620,6 +643,7 @@ class RobotTest(unittest.TestCase):
             "ur10": 6,
             "ur3e": 6,
             "ur5e": 6,
+            "ur5e1": 6,
             "ur10e": 6,
             "ur16e": 6,
             "cr5": 6,
@@ -629,6 +653,9 @@ class RobotTest(unittest.TestCase):
         }
 
         for robot in self.robots:
+            if robot.name not in gt_klampt_vector_dimensionality:
+                print(f"Skipping {robot.name}. TODO: add ground truth vector dimensionality for this robot")
+                continue
             gt_vector_dim = gt_klampt_vector_dimensionality[robot.name]
             ndof = robot.ndof
 

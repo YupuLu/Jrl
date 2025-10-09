@@ -8,6 +8,8 @@
   Author: Jason Peng <jason@ufactory.cc>
   Contributers:
 -->
+  <klampt use_vis_geom="1" flip_yz="1" />
+  
   <link name="world"/>
   <joint name="world_joint" type="fixed">
     <parent link="world"/>

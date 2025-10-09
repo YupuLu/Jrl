@@ -21,6 +21,7 @@ as well
 
  -->
 <robot name="iiwa7">
+  <klampt use_vis_geom="1" flip_yz="1" />
 
   <material name="Grey">
     <color rgba="0.4 0.4 0.4 1.0" />

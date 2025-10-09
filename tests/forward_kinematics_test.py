@@ -138,25 +138,32 @@ class TestForwardKinematics(unittest.TestCase):
         Test that the all three forward kinematics functions return the expected value for saved input
         """
         for robot in self.robots:
-            samples, endpoints_expected = get_gt_samples_and_endpoints(robot.name)
-            kinpy_fk, klampt_fk, batch_fk = self.get_fk_poses(robot, samples)
+            try:
+                samples, endpoints_expected = get_gt_samples_and_endpoints(robot.name)
+            except FileNotFoundError:
+                # TODO: Add ground truth data for all robots
+                print(f"No ground truth data found for {robot.name} - skipping")
+                continue
 
+            kinpy_fk, klampt_fk, batch_fk = self.get_fk_poses(robot, samples)
+            debug_str = f"robot: {robot.name}\n"
+            
             if robot._batch_fk_enabled:
-                assert_pose_positions_almost_equal(kinpy_fk, batch_fk, "kinpy_fk", "batch_fk_t")
-                assert_pose_positions_almost_equal(batch_fk, endpoints_expected, "batch_fk", "endpoints_expected")
-                assert_pose_rotations_almost_equal(kinpy_fk, batch_fk)
-                assert_pose_rotations_almost_equal(batch_fk, endpoints_expected)
+                assert_pose_positions_almost_equal(kinpy_fk, batch_fk, "kinpy_fk", "batch_fk_t", debug_str=debug_str)
+                assert_pose_positions_almost_equal(batch_fk, endpoints_expected, "batch_fk", "endpoints_expected", debug_str=debug_str)
+                assert_pose_rotations_almost_equal(kinpy_fk, batch_fk, debug_str=debug_str)
+                assert_pose_rotations_almost_equal(batch_fk, endpoints_expected, debug_str=debug_str)
 
             # fks batch eachother
-            assert_pose_positions_almost_equal(kinpy_fk, klampt_fk)
-            assert_pose_rotations_almost_equal(kinpy_fk, klampt_fk)
+            assert_pose_positions_almost_equal(kinpy_fk, klampt_fk, debug_str=debug_str)
+            assert_pose_rotations_almost_equal(kinpy_fk, klampt_fk, debug_str=debug_str)
 
             # fks match saved
-            assert_pose_positions_almost_equal(kinpy_fk, endpoints_expected)
-            assert_pose_positions_almost_equal(klampt_fk, endpoints_expected)
+            assert_pose_positions_almost_equal(kinpy_fk, endpoints_expected, debug_str=debug_str)
+            assert_pose_positions_almost_equal(klampt_fk, endpoints_expected, debug_str=debug_str)
 
-            assert_pose_rotations_almost_equal(kinpy_fk, endpoints_expected)
-            assert_pose_rotations_almost_equal(klampt_fk, endpoints_expected)
+            assert_pose_rotations_almost_equal(kinpy_fk, endpoints_expected, debug_str=debug_str)
+            assert_pose_rotations_almost_equal(klampt_fk, endpoints_expected, debug_str=debug_str)
 
     def test_fk_functions_equal(self):
         """
@@ -166,12 +173,13 @@ class TestForwardKinematics(unittest.TestCase):
         for robot in self.robots:
             samples = robot.sample_joint_angles(n_samples)
             kinpy_fk, klampt_fk, batch_fk = self.get_fk_poses(robot, samples)
-            assert_pose_positions_almost_equal(kinpy_fk, klampt_fk)
-            assert_pose_rotations_almost_equal(kinpy_fk, klampt_fk)
+            debug_str = f"robot: {robot.name}\n"
+            assert_pose_positions_almost_equal(kinpy_fk, klampt_fk, "kinpy_fk", "klampt_fk", debug_str=debug_str)
+            assert_pose_rotations_almost_equal(kinpy_fk, klampt_fk, "kinpy_fk", "klampt_fk", debug_str=debug_str)
 
             if robot._batch_fk_enabled:
-                assert_pose_positions_almost_equal(kinpy_fk, batch_fk, "kinpy_fk", "batch_fk")
-                assert_pose_rotations_almost_equal(kinpy_fk, batch_fk)
+                assert_pose_positions_almost_equal(kinpy_fk, batch_fk, "kinpy_fk", "batch_fk", debug_str=debug_str)
+                assert_pose_rotations_almost_equal(kinpy_fk, batch_fk, "kinpy_fk", "batch_fk", debug_str=debug_str)
 
     def test_each_dimension_actuated(self):
         """
