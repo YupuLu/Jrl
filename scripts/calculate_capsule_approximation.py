@@ -54,22 +54,28 @@ def plot_sphere(ax, center, radius):
     ax.plot_wireframe(x, y, z, color="r")
 
 
-def random_choice_optimal_capsule(vertices: torch.Tensor):
-    nsamples = 100000
-    p1s = 0.05 * torch.randn(nsamples, 3)
-    p2s = 0.05 * torch.randn(nsamples, 3)
-    rs = 0.05 * torch.abs(torch.randn(nsamples))
+def random_choice_optimal_capsule(vertices: torch.Tensor, nruns=10):
+    nsamples = 10000
+    for i in range(nruns):
+        p1s = 0.05 * torch.randn(nsamples, 3)
+        p2s = 0.05 * torch.randn(nsamples, 3)
+        rs = 0.05 * torch.abs(torch.randn(nsamples))
 
-    dists = point_capsule_distance_batch(
-        vertices.unsqueeze(0).expand(nsamples, -1, -1).reshape(-1, 3),
-        p1s.unsqueeze(1).expand(-1, vertices.shape[0], -1).reshape(-1, 3),
-        p2s.unsqueeze(1).expand(-1, vertices.shape[0], -1).reshape(-1, 3),
-        rs.unsqueeze(1).expand(-1, vertices.shape[0]).reshape(-1),
-    ).reshape(nsamples, vertices.shape[0])
-    maxdists, _ = torch.max(dists, dim=1)
-    mask = maxdists < 0
-    _, i = torch.min(capsule_volume_batch(p1s[mask], p2s[mask], rs[mask]), dim=0)
-    p1, p2, r = p1s[mask][i], p2s[mask][i], rs[mask][i]
+        dists = point_capsule_distance_batch(
+            vertices.unsqueeze(0).expand(nsamples, -1, -1).reshape(-1, 3),
+            p1s.unsqueeze(1).expand(-1, vertices.shape[0], -1).reshape(-1, 3),
+            p2s.unsqueeze(1).expand(-1, vertices.shape[0], -1).reshape(-1, 3),
+            rs.unsqueeze(1).expand(-1, vertices.shape[0]).reshape(-1),
+        ).reshape(nsamples, vertices.shape[0])
+        maxdists, _ = torch.max(dists, dim=1)
+        mask = maxdists < 0
+        if torch.sum(mask) > 0:
+            _, i = torch.min(capsule_volume_batch(p1s[mask], p2s[mask], rs[mask]), dim=0)
+            p1, p2, r = p1s[mask][i], p2s[mask][i], rs[mask][i]
+            break
+        else:
+            print(f"random_choice_optimal_capsule() | Run {i}: No valid capsule found")
+            p1, p2, r = None, None, None
 
     return p1, p2, r
 
@@ -156,7 +162,7 @@ def lm_penalty_optimal_capsule(vertices: torch.Tensor, nruns=5, vis=None):
                         print(f"Converged in {inner_step} steps")
 
                     if inner_step > 5000:
-                        print(f"Did not converge in {inner_step} inner LM steps")
+                        print(f"Did not converge in {inner_step} inner LM steps, norm of dx: {torch.norm(dx):.4f}")
                         break
 
                     inner_step += 1
@@ -171,6 +177,8 @@ def lm_penalty_optimal_capsule(vertices: torch.Tensor, nruns=5, vis=None):
                 if torch.all(fg(x, 1, vertices)[1:] <= margin):
                     satisfied = True
                     print(f"Satisfied in {outer_step} outer steps")
+                else:
+                    print(f"Not satisfied in {outer_step} outer steps, max violation {torch.max(fg(x, 1, vertices)[1:]):.4f}")
 
                 if outer_step > 100:
                     print(f"Did not satisfy in {outer_step} outer steps")
@@ -192,7 +200,7 @@ def lm_penalty_optimal_capsule(vertices: torch.Tensor, nruns=5, vis=None):
     return best_p1, best_p2, best_r + margin
 
 
-def stl_to_capsule(stl_path: str, outdir: pathlib.PosixPath, vis=None):
+def stl_to_capsule(stl_path: str, outdir: pathlib.PosixPath, vis=None, model_scale=1.0):
 
     linkname = stl_path.stem
     txt_path = outdir / f"{linkname}.txt"
@@ -206,8 +214,9 @@ def stl_to_capsule(stl_path: str, outdir: pathlib.PosixPath, vis=None):
         vis["mesh"].set_object(stl_mesh_geom)
     mesh = stl.mesh.Mesh.from_file(stl_path)
     vertices = mesh.vectors.reshape(-1, 3)
-    vertices = torch.tensor(vertices)
+    vertices = torch.tensor(vertices) * model_scale
 
+    # p1, p2, r = random_choice_optimal_capsule(vertices)
     p1, p2, r = lm_penalty_optimal_capsule(vertices, vis=vis)
     print("p1", p1)
     print("p2", p2)
@@ -215,11 +224,11 @@ def stl_to_capsule(stl_path: str, outdir: pathlib.PosixPath, vis=None):
 
     figure = plt.figure()
     axes = figure.add_subplot(projection="3d")
-    axes.add_collection3d(mplot3d.art3d.Poly3DCollection(mesh.vectors))
+    axes.add_collection3d(mplot3d.art3d.Poly3DCollection(mesh.vectors*model_scale))
     plot_sphere(axes, p1.cpu().numpy(), r.cpu().numpy())
     plot_sphere(axes, p2.cpu().numpy(), r.cpu().numpy())
 
-    scale = mesh.points.flatten()
+    scale = mesh.points.flatten() * model_scale
     axes.auto_scale_xyz(scale, scale, scale)
 
     img_path = outdir / f"{linkname}.png"
@@ -246,6 +255,10 @@ if __name__ == "__main__":
     args = argparser.parse_args()
 
     assert args.robot_name in ALL_ROBOT_NAMES
+    if 'aloha' in args.robot_name:
+        model_scale = 0.001
+    else:
+        model_scale = 1.0
 
     vis = None
     if args.visualize:
@@ -255,4 +268,4 @@ if __name__ == "__main__":
     outdir = pathlib.Path(f"jrl/urdfs/{args.robot_name}/capsules")
     outdir.mkdir(exist_ok=True)
     for stl_path in pathlib.Path(f"jrl/urdfs/{args.robot_name}/meshes/collision").glob("*.stl"):
-        stl_to_capsule(stl_path, outdir, vis)
+        stl_to_capsule(stl_path, outdir, vis, model_scale=model_scale)

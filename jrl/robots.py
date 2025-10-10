@@ -1198,10 +1198,73 @@ class Sawyer(Robot):
             additional_link_name=None,
         )
 
+ALOHA_SINGLE_NEVER_COLLIDING_LINKS = [
+    ('puppet_left/shoulder_link', 'puppet_left/upper_forearm_link'),
+    ('puppet_left/upper_forearm_link', 'puppet_left/wrist_link')
+]
+ALOHA_SINGLE_ALWAYS_COLLIDING_LINKS = [
+    ('puppet_left/base_link', 'puppet_left/upper_arm_link'),
+    ('puppet_left/gripper_link', 'puppet_left/gripper_bar_link')
+]
+class Aloha(Robot):
+    name = "aloha"
+    formal_robot_name = "Aloha"
+
+    # See
+    # Rotational repeatability calculated in calculate_rotational_repeatability.py
+    POSITIONAL_REPEATABILITY_MM = 0.1
+    ROTATIONAL_REPEATABILITY_DEG = 0.1
+
+    def __init__(self, verbose: bool = False):
+        active_joints = [
+            "puppet_left/waist",
+            "puppet_left/shoulder",
+            "puppet_left/elbow",
+            "puppet_left/forearm_roll",
+            "puppet_left/wrist_angle",
+            "puppet_left/wrist_rotate",
+        ]
+        urdf_filepath = get_filepath("urdfs/aloha/gazebo_dual_vx300s_formatted.urdf")
+        base_link = "base"
+        end_effector_link_name = "puppet_left/ee_gripper_link"
+
+        # Must match the total number of joints (including fixed) in the robot.
+        # Use "None" for no collision geometry
+        # collision_capsules_by_link = None
+        collision_capsules_by_link = {
+            "base": None,
+            "puppet_left/base_link": _load_capsule("urdfs/aloha/capsules/vx300s_1_base.txt"),
+            "puppet_left/shoulder_link": _load_capsule("urdfs/aloha/capsules/vx300s_2_shoulder.txt"),
+            "puppet_left/upper_arm_link": _load_capsule("urdfs/aloha/capsules/vx300s_3_upper_arm.txt"),
+            "puppet_left/upper_forearm_link": _load_capsule("urdfs/aloha/capsules/vx300s_4_upper_forearm.txt"),
+            "puppet_left/lower_forearm_link": _load_capsule("urdfs/aloha/capsules/vx300s_5_lower_forearm.txt"),
+            "puppet_left/wrist_link": _load_capsule("urdfs/aloha/capsules/vx300s_6_wrist.txt"),
+            "puppet_left/gripper_link": _load_capsule("urdfs/aloha/capsules/vx300s_7_gripper.txt"),
+            "puppet_left/ee_arm_link": None,
+            "puppet_left/gripper_bar_link": _load_capsule("urdfs/aloha/capsules/vx300s_9_gripper_bar.txt"),
+            "puppet_left/fingers_link": None,
+            "puppet_left/ee_gripper_link": None,
+        }
+
+        # ignored_collision_pairs = []
+        ignored_collision_pairs = ALOHA_SINGLE_NEVER_COLLIDING_LINKS + ALOHA_SINGLE_ALWAYS_COLLIDING_LINKS
+        Robot.__init__(
+            self,
+            Aloha.name,
+            urdf_filepath,
+            active_joints,
+            base_link,
+            end_effector_link_name,
+            ignored_collision_pairs,
+            collision_capsules_by_link,
+            verbose=verbose,
+            additional_link_name=None,
+        )
+
 
 ALL_CLCS = [Panda, Fetch, FetchArm, Rizon4, Ur3, Ur5, Ur10, 
             Ur3e, Ur5e, Ur5e1, Ur10e, Ur16e, Iiwa7, Iiwa14, XArm6, 
-            Cr5, Kinova3, Sawyer]
+            Cr5, Kinova3, Sawyer, Aloha]
 # ALL_CLCS = [Ur5]
 # TODO: Add capsules for iiwa7, fix FK for baxter
 # ALL_CLCS = [Panda, Fetch, FetchArm, Iiwa7, Baxter]

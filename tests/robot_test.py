@@ -267,6 +267,7 @@ class RobotTest(unittest.TestCase):
             "xarm6": 6,
             "kinova3": 7,
             "sawyer": 7,
+            "aloha": 6,
         }
         for robot in self.robots:
             self.assertEqual(robot.ndof, ground_truth_n_dofs[robot.name])
@@ -434,6 +435,14 @@ class RobotTest(unittest.TestCase):
                 (-2.9761, 2.9761),
                 (-2.9761, 2.9761),
                 (-4.7124, 4.7124),
+            ],
+            "aloha": [
+                (-3.141582653589793, 3.141582653589793),
+                (-1.8500490071139892, 1.2566370614359172),
+                (-1.7627825445142729, 1.6057029118347832),
+                (-3.141582653589793, 3.141582653589793),
+                (-1.8675022996339325, 2.234021442552742),
+                (-3.141582653589793, 3.141582653589793),
             ],
         }
         for robot in self.robots:
@@ -610,6 +619,14 @@ class RobotTest(unittest.TestCase):
                 "right_j5",
                 "right_j6",
             ],
+            "aloha": [
+                "puppet_left/waist",
+                "puppet_left/shoulder",
+                "puppet_left/elbow",
+                "puppet_left/forearm_roll",
+                "puppet_left/wrist_angle",
+                "puppet_left/wrist_rotate",
+            ]
         }
         for robot in self.robots:
             if robot.name not in ground_truth_actuated_joints:
@@ -630,7 +647,7 @@ class RobotTest(unittest.TestCase):
             x_returned = robot._qs_to_x(q)
             np.testing.assert_allclose(x_original, x_returned)
 
-    def test_x_driver_vec_conversion_panda(self):
+    def test_x_driver_vec_conversion(self):
         gt_klampt_vector_dimensionality = {
             "fetch": 14,  # 24 total joints, 10 of them are fixed
             "fetch_arm": 14,  # 24 total joints, 10 of them are fixed
@@ -650,6 +667,7 @@ class RobotTest(unittest.TestCase):
             "xarm6": 6,
             "kinova3": 7,
             "sawyer": 7,
+            "aloha": 8, # aloha has 2 non user specified actuated joints
         }
 
         for robot in self.robots:
@@ -662,14 +680,14 @@ class RobotTest(unittest.TestCase):
             # test 1
             x_original = np.zeros(ndof)
             driver_vec = robot._driver_vec_from_x(x_original)
-            self.assertEqual(len(driver_vec), gt_vector_dim)
+            self.assertEqual(len(driver_vec), gt_vector_dim, msg=f"{robot.name} {len(driver_vec)} vs {gt_vector_dim}")
             x_returned = robot._x_from_driver_vec(driver_vec)
             np.testing.assert_allclose(x_original, x_returned)
 
             # test 2
             x_original = 0.1 * np.arange(ndof)
             driver_vec = robot._driver_vec_from_x(x_original)
-            self.assertEqual(len(driver_vec), gt_vector_dim)  # panda has 1 non user specified actuated joint
+            self.assertEqual(len(driver_vec), gt_vector_dim, msg=f"{robot.name} {len(driver_vec)} vs {gt_vector_dim}")  
             x_returned = robot._x_from_driver_vec(driver_vec)
             np.testing.assert_allclose(x_original, x_returned)
 
