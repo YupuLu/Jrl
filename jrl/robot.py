@@ -384,12 +384,15 @@ class Robot:
         assert len(self.revolute_joint_idxs) + len(self.prismatic_joint_idxs) == self.ndof
         return configs[:, self.revolute_joint_idxs], configs[:, self.prismatic_joint_idxs]
 
-    def sample_joint_angles(self, n: int, joint_limit_eps: float = 1e-6) -> np.ndarray:
+    def sample_joint_angles(self, n: int, joint_limit_eps: float = 1e-6, rng: Optional[np.random.Generator] = None) -> np.ndarray:
         """Returns a [N x ndof] matrix of randomly drawn joint angle vectors. The joint angles are sampled from the
         range [lower+joint_limit_eps, upper-joint_limit_eps]
         """
-        angs = np.random.rand(n, self.ndof)  # between [0, 1)
-
+        if rng is None:
+            angs = np.random.rand(n, self.ndof)  # between [0, 1)
+        else:
+            angs = rng.random((n, self.ndof))  # between [0, 1)
+            
         # Sample
         for i, (lower, upper) in enumerate(self.actuated_joints_limits):
             # Add eps padding to avoid the joint limits
@@ -410,7 +413,7 @@ class Robot:
         return_torch: bool = False,
         self_colliding_percentage: float = 1.0,
         standardize_quat: bool = False,
-
+        rng: Optional[np.random.Generator] = None,
     ) -> Tuple[np.ndarray, np.ndarray]:
         """Returns a [N x ndof] matrix of randomly drawn joint angle vectors with matching end effector poses."""
         samples = np.zeros((n, self.ndof))
@@ -423,7 +426,7 @@ class Robot:
             
         with tqdm.tqdm(total=n, disable=not tqdm_enabled) as pbar:
             while True:
-                samples_i = self.sample_joint_angles(internal_batch_size, joint_limit_eps=joint_limit_eps)
+                samples_i = self.sample_joint_angles(internal_batch_size, joint_limit_eps=joint_limit_eps, rng=rng)
                 counter0_i = counter
 
                 for i in range(samples_i.shape[0]):

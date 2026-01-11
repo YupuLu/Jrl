@@ -790,6 +790,7 @@ class Ur3e(Robot):
         )
 
 class Ur5e(Robot):
+    # A more precise version of the UR5e
     name = "ur5e"
     formal_robot_name = "UR5e"
 
@@ -841,6 +842,7 @@ class Ur5e(Robot):
         )
 
 class Ur5e1(Robot):
+    # A rougher version of the UR5e, but aligns with mujoco UR5e model in robosuite
     name = "ur5e1"
     formal_robot_name = "UR5e1"
 
